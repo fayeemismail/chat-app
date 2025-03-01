@@ -43,6 +43,7 @@ const Chat = ({ socket, userName, room }) => {
       </div>
 
       {/* Chat Body */}
+      
       <ScrollToBottom className="flex-1  overflow-y-auto p-4 space-y-3 bg-gray-100">
         {messageList.map((messageContent, index) => (
           <div
