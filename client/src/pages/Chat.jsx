@@ -36,6 +36,7 @@ const Chat = ({ socket, userName, room }) => {
   }, [socket]);
 
   return (
+    
     <div className="flex flex-col w-full max-w-lg mx-auto h-[80vh] border border-gray-300 shadow-lg rounded-lg overflow-hidden mt-5 bg-white">
       {/* Header */}
       <div className="bg-blue-600 text-white py-3 px-4 text-lg  font-semibold text-center flex-shrink-0">
@@ -43,7 +44,7 @@ const Chat = ({ socket, userName, room }) => {
       </div>
 
       {/* Chat Body */}
-      
+
       <ScrollToBottom className="flex-1  overflow-y-auto p-4 space-y-3 bg-gray-100">
         {messageList.map((messageContent, index) => (
           <div
