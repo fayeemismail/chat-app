@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import Chat from './Chat';
 
 const Socket = io.connect('http://localhost:3001', {
   autoConnect: false,
@@ -11,66 +10,102 @@ const Socket = io.connect('http://localhost:3001', {
 const Home = () => {
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [rooms, setRooms] = useState([]);
   const [room, setRoom] = useState('');
-  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (!user) {
       navigate('/sign-in');
-    } else {
-      const storedSocketId = localStorage.getItem('socketId');
-      console.log()
-      
-      if (storedSocketId) {
-        Socket.auth = { userId: user.id, socketId: storedSocketId };
-        Socket.connect();
-      } else {
-        Socket.auth = { userId: user.id };
-        Socket.connect();
-      }
-
-      Socket.on('socket_id', (socketId) => {
-        localStorage.setItem('socketId', socketId);
-      });
+      return;
     }
+
+    Socket.auth = { userId: user.id };
+    Socket.connect();
+
+    Socket.on('socket_id', (socketId) => {
+      localStorage.setItem('socketId', socketId);
+    });
+
+    fetchUsersAndRooms();
 
     return () => {
       Socket.disconnect();
     };
   }, [user, navigate]);
 
-  const joinRoom = () => {
-    if (room !== '') {
-      Socket.emit('join_room', room);
-      setShowChat(true);
+  const fetchUsersAndRooms = async () => {
+    try {
+      const usersRes = await fetch(`api/users/findUser?userId=${user.id}`);
+      const roomsRes = await fetch(`api/users/findRoom?userId=${user.id}`);
+      const usersData = await usersRes.json();
+      console.log(usersData)
+      const roomsData = await roomsRes.json();
+      setUsers(usersData);
+      setRooms(roomsData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const joinRoom = (roomId) => {
+    if (roomId) {
+      Socket.emit('join_room', roomId);
+      navigate(`/chat/${roomId}`);
+    }
+  };
+
+  const createRoom = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/create-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, name: `Room-${Date.now()}` }),
+      });
+      const data = await res.json();
+      setRooms([...rooms, data]);
+    } catch (error) {
+      console.log(error);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center mt-45 gap-4 p-6 bg-gray-100 rounded-lg shadow-lg w-96 mx-auto">
-      <h1 className="text-2xl">Hello {user?.name}</h1>
-
-      {!showChat ? (
-        <div className="flex flex-col w-full gap-4">
-          <h1 className="text-xl font-bold text-gray-700">Join A Chat</h1>
-
-          <input
-            type="text"
-            placeholder="Enter Room ID..."
-            onChange={(e) => setRoom(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          <button
-            onClick={joinRoom}
-            className="w-full p-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-all"
+    <div className="flex h-screen p-4" style={{scrollbars: "none"}}>
+      {/* Users Container */}
+      <div className="w-1/2 p-4 bg-gray-100 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold mb-4">Available Users</h2>
+        <ul>
+          {users.map((user) => (
+            <li key={user._id} className="p-2 border-b border-gray-300">
+              {user.name} 
+            </li>
+          ))}
+        </ul>
+      </div>
+      
+      {/* Rooms Container */}
+      <div className="w-1/2 p-4 bg-gray-100 rounded-lg shadow-md ml-4 relative">
+        <div className="flex justify-between mb-4">
+          <h2 className="text-xl font-semibold">Available Rooms</h2>
+          <button 
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            onClick={createRoom}
           >
-            Join Room
+            + Create Room
           </button>
         </div>
-      ) : (
-        <Chat socket={Socket} userName={user?.name} room={room} />
-      )}
+        <ul>
+          {rooms.map((room) => (
+            <li 
+              key={room._id} 
+              className="p-2 border-b border-gray-300 cursor-pointer hover:bg-gray-200"
+              onClick={() => joinRoom(room._id)}
+            >
+              {room.name}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

@@ -12,7 +12,6 @@ const initializeSocket = (server) => {
 
   io.on('connection', (socket) => {
     const userId = socket.handshake.auth.userId;
-    console.log(userId)
 
     if (userId) {
       if (users[userId]) {
@@ -20,7 +19,7 @@ const initializeSocket = (server) => {
       }
 
       users[userId] = socket.id;
-      console.log(`User ${userId} connected with Socket ID: ${socket.id}`);
+      console.log('user logged in');
 
       socket.emit('socket_id', socket.id);
     }

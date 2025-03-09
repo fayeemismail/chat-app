@@ -23,6 +23,7 @@ export const logout = createAsyncThunk(
     'auth/logout',
     async (_, { rejectWithValue }) => {
         try {
+            await axios.post('/api/auth/signout');
             localStorage.removeItem('token');
         } catch (error) {
             return rejectWithValue(error.response?.data?.error || 'Logout Failed');
@@ -93,6 +94,7 @@ const authSlice = createSlice({
                 state.isAuthenticated = false;
                 state.loading = false;
                 state.error = null;
+                localStorage.removeItem('token')
             })
             .addCase(logout.rejected, (state, action) => {
                 state.loading = false;

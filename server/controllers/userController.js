@@ -60,7 +60,6 @@ export const signup = async (req, res, next) => {
         } else {
             res.status(500).json({ error: 'Failed to save User!' })
         }
-        console.log(name, email, password, confirmPassword)
     } catch (error) {
         console.log(error)
         res.status(500).json({ error: "Server error!" });
@@ -72,8 +71,6 @@ export const signup = async (req, res, next) => {
 export const signin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-
-        console.log(email, password);
 
         // Validation for email
         if (!email || !emailValidation(email)) {
@@ -125,6 +122,48 @@ export const signin = async (req, res, next) => {
         res.status(500).json({ error: 'Server Error!' });
     }
 };
+
+export const logoutUser = async(req, res) =>{
+    try {
+        res.status(200).json({message: "Logout Successful"})
+    } catch (error) {
+        res.status(500).json({error: "Logout Failed"})
+    }
+}
+
+
+
+
+export const findUsers = async(req, res, next)=> {
+    try {
+        const {userId} = req.query
+        const users = await User.find({_id:{ $ne: userId }})
+        res.status(200).json(users)
+    } catch (error) {
+        res.status(500).send({error: "Internal Server Error"})
+    }
+}
+
+export const findRoom = async(req, res, next) => {
+    try {
+        const rooms = await ChatRoom.find()
+        res.status(200).json(rooms)
+    } catch (error) {
+        res.status(500).json({error:"Internal server error"})
+    }
+}
+
+export const profilePage = async(req, res, next) => {
+    try {
+        const {userId} = req.query
+        const userData = await User.findOne({_id:userId})
+        res.status(200).json(userData)
+    } catch (error) {
+        
+    }
+}
+
+
 
 
 

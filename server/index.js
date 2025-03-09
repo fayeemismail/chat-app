@@ -4,7 +4,8 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import authRoute from './routes/authRoute.js';
-import chatRoute from './routes/chatRoute.js'
+import chatRoute from './routes/chatRoute.js';
+import userRoute from './routes/usersRoute.js';
 import initializeSocket from './sockets/socketHandler.js';
 import cookieParser from 'cookie-parser';
 
@@ -38,6 +39,7 @@ mongoose.connect(process.env.MONGO)
 //SETTING ROUTE FOR USER
 app.use("/api/auth", authRoute);
 app.use('/api/chat', chatRoute);
+app.use('/api/users', userRoute);
 
 // Start the server
 server.listen(process.env.PORT, () => {
