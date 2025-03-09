@@ -1,44 +1,45 @@
-const express = require('express');
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import authRoute from './routes/authRoute.js';
+import chatRoute from './routes/chatRoute.js'
+import initializeSocket from './sockets/socketHandler.js';
+import cookieParser from 'cookie-parser';
+
+dotenv.config();
+
+
+
 const app = express();
-const http = require('http');
-const cors = require('cors');
-const { Server } = require('socket.io');
-
-
 app.use(cors());
+app.use(express.json());
+app.use(cookieParser())
+
+
 
 const server = http.createServer(app);
 
-const io = new Server(server, {
-    cors: {
-        origin: 'http://localhost:5173',
-        methods: ["GET", 'POST']
-    }
-})
 
-io.on('connection', (socket) =>{
-
-    console.log('Usr connection id',socket.id);
-
-    socket.on('join_room', (data)=>{
-        socket.join(data)
-        console.log('user with id:', socket.id, "joined room", data)
-    })
- 
-
-    socket.on('send_message', (data) => {
-        console.log(data)
-        socket.to(data.room).emit( 'receive_message',data)
-    })
-    
-    socket.on('disconnect', ()=> {
-        console.log('user disconnected', socket.id)
-    })
-
-})
-
-server.listen(3001, ()=>{
-    console.log('server started')
-})
+// Initialize socket.io
+const io = initializeSocket(server);
 
 
+// Connect MongoDB
+// console.log(process.env.MONGO) 
+mongoose.connect(process.env.MONGO)
+.then(() => console.log('MongoDB Connected'))
+.catch((err) => console.log(err));
+
+
+
+
+//SETTING ROUTE FOR USER
+app.use("/api/auth", authRoute);
+app.use('/api/chat', chatRoute);
+
+// Start the server
+server.listen(process.env.PORT, () => {
+    console.log('Server started on port 3001');
+});
