@@ -13,7 +13,7 @@ const SignIn = () => {
   });
   const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth);
 
-  console.log(user)
+
   // Prevent infinite loop by only navigating if user is authenticated
   useEffect(() => {
     if (isAuthenticated) {

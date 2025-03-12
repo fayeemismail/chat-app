@@ -1,4 +1,5 @@
 import mongoose, { mongo } from "mongoose";
+import notification from "./notificationModel.js";
 const {Schema} = mongoose; 
 
 const userSchema = new Schema({
@@ -40,8 +41,11 @@ const userSchema = new Schema({
         type: String,
         default: '',
     },
+    notification:[{
+        type: Schema.Types.ObjectId,
+        ref: "notification"
+    }]
 });
 
 const User = mongoose.model('User', userSchema);
 export default User;
-

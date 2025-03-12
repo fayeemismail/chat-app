@@ -2,112 +2,129 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import Swal from 'sweetalert2';
 
 const Socket = io.connect('http://localhost:3001', {
-  autoConnect: false,
+    autoConnect: false,
 });
 
 const Home = () => {
-  const user = useSelector((state) => state.auth.user);
-  const navigate = useNavigate();
-  const [users, setUsers] = useState([]);
-  const [rooms, setRooms] = useState([]);
-  const [room, setRoom] = useState('');
+    const user = useSelector((state) => state.auth.user);
+    const navigate = useNavigate();
+    const [rooms, setRooms] = useState([]);
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/sign-in');
-      return;
-    }
+    useEffect(() => {
+        if (!user) {
+            navigate('/sign-in');
+            return;
+        }
 
-    Socket.auth = { userId: user.id };
-    Socket.connect();
+        Socket.auth = { userId: user.id };
+        Socket.connect();
 
-    Socket.on('socket_id', (socketId) => {
-      localStorage.setItem('socketId', socketId);
-    });
+        Socket.on('socket_id', (socketId) => {
+            localStorage.setItem('socketId', socketId);
+        });
 
-    fetchUsersAndRooms();
+        fetchRooms();
 
-    return () => {
-      Socket.disconnect();
+        return () => {
+            Socket.disconnect();
+        };
+    }, [user, navigate]);
+
+    const fetchRooms = async () => {
+        try {
+            const roomsRes = await fetch(`api/users/findRoom?userId=${user.id}`);
+            const roomsData = await roomsRes.json();
+
+            if (Array.isArray(roomsData)) {
+                setRooms(roomsData);
+            } else {
+                console.error("Unexpected response format:", roomsData);
+                setRooms([]);
+            }
+        } catch (error) {
+            console.error("Error fetching rooms:", error);
+            setRooms([]);
+        }
     };
-  }, [user, navigate]);
 
-  const fetchUsersAndRooms = async () => {
-    try {
-      const usersRes = await fetch(`api/users/findUser?userId=${user.id}`);
-      const roomsRes = await fetch(`api/users/findRoom?userId=${user.id}`);
-      const usersData = await usersRes.json();
-      console.log(usersData)
-      const roomsData = await roomsRes.json();
-      setUsers(usersData);
-      setRooms(roomsData);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    const joinRoom = (roomId) => {
+        if (roomId) {
+            Socket.emit('join_room', roomId);
+            navigate(`/chat/${roomId}`);
+        }
+    };
 
-  const joinRoom = (roomId) => {
-    if (roomId) {
-      Socket.emit('join_room', roomId);
-      navigate(`/chat/${roomId}`);
-    }
-  };
+    const createRoom = () => {
+        Swal.fire({
+            title: 'Enter Room Name',
+            input: 'text',
+            inputPlaceholder: 'Room Name',
+            showCancelButton: true,
+            confirmButtonText: 'Create Room',
+            cancelButtonText: 'Cancel',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Please enter a room name!';
+                }
+            },
+        }).then(async (result) => {
+            if (result.isConfirmed && result.value.trim()) {
+                try {
+                    const res = await fetch('api/users/create-room', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: user.id, name: result.value }),
+                    });
+                    const data = await res.json();
+                    if (data.message) {
+                        fetchRooms(); // Fetch updated rooms instead of adding manually
+                        Swal.fire('Success', data.message, 'success');
+                    } else if (data.error) {
+                        Swal.fire('Error', data.error, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error creating room:', error);
+                    Swal.fire('Error', 'Failed to create room!', 'error');
+                }
+            }
+        });
+    };
 
-  const createRoom = async () => {
-    try {
-      const res = await fetch('http://localhost:3001/create-room', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, name: `Room-${Date.now()}` }),
-      });
-      const data = await res.json();
-      setRooms([...rooms, data]);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  return (
-    <div className="flex h-screen p-4" style={{scrollbars: "none"}}>
-      {/* Users Container */}
-      <div className="w-1/2 p-4 bg-gray-100 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">Available Users</h2>
-        <ul>
-          {users.map((user) => (
-            <li key={user._id} className="p-2 border-b border-gray-300">
-              {user.name} 
-            </li>
-          ))}
-        </ul>
-      </div>
-      
-      {/* Rooms Container */}
-      <div className="w-1/2 p-4 bg-gray-100 rounded-lg shadow-md ml-4 relative">
-        <div className="flex justify-between mb-4">
-          <h2 className="text-xl font-semibold">Available Rooms</h2>
-          <button 
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            onClick={createRoom}
-          >
-            + Create Room
-          </button>
+    return (
+        <div className="h-screen flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-lg p-4 bg-gray-100 rounded-lg shadow-md">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">Available Rooms</h2>
+                    <button
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                        onClick={createRoom}
+                    >
+                        + Create Room
+                    </button>
+                </div>
+                <ul>
+                    {rooms.length > 0 ? (
+                        rooms.map((room) => (
+                            <li key={room?._id || Math.random()} className="p-2 border-b border-gray-300 flex justify-between items-center">
+                                <span>{room?.name || "Unknown Room"}</span>
+                                <button
+                                    className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600"
+                                    onClick={() => room?._id && joinRoom(room._id)}
+                                >
+                                    Join
+                                </button>
+                            </li>
+                        ))
+                    ) : (
+                        <p className="text-gray-500 text-center">No rooms available</p>
+                    )}
+                </ul>
+            </div>
         </div>
-        <ul>
-          {rooms.map((room) => (
-            <li 
-              key={room._id} 
-              className="p-2 border-b border-gray-300 cursor-pointer hover:bg-gray-200"
-              onClick={() => joinRoom(room._id)}
-            >
-              {room.name}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Home;

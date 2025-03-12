@@ -5,6 +5,7 @@ import dotenv, { populate } from 'dotenv';
 import Message from "../model/messageModel.js";
 import ChatRoom from "../model/chatRoomModel.js";
 import mongoose from "mongoose";
+import notification from "../model/notificationModel.js";
 
 dotenv.config();
 
@@ -123,43 +124,95 @@ export const signin = async (req, res, next) => {
     }
 };
 
-export const logoutUser = async(req, res) =>{
+export const logoutUser = async (req, res, next) => {
     try {
-        res.status(200).json({message: "Logout Successful"})
+        res.status(200).json({ message: "Logout Successful" })
     } catch (error) {
-        res.status(500).json({error: "Logout Failed"})
+        res.status(500).json({ error: "Logout Failed" })
     }
 }
 
 
 
 
-export const findUsers = async(req, res, next)=> {
+export const findUsers = async (req, res, next) => {
     try {
-        const {userId} = req.query
-        const users = await User.find({_id:{ $ne: userId }})
+        const { userId } = req.query
+        console.log(userId)
+        const users = await User.find({ _id: { $ne: userId } })
         res.status(200).json(users)
     } catch (error) {
-        res.status(500).send({error: "Internal Server Error"})
+        res.status(500).send({ error: "Internal Server Error" })
     }
 }
 
-export const findRoom = async(req, res, next) => {
+export const findRoom = async (req, res, next) => {
     try {
         const rooms = await ChatRoom.find()
         res.status(200).json(rooms)
     } catch (error) {
-        res.status(500).json({error:"Internal server error"})
+        res.status(500).json({ error: "Internal server error" })
     }
 }
 
-export const profilePage = async(req, res, next) => {
+export const profilePage = async (req, res, next) => {
     try {
-        const {userId} = req.query
-        const userData = await User.findOne({_id:userId})
+        const { userId } = req.query
+        const userData = await User.findOne({ _id: userId })
         res.status(200).json(userData)
     } catch (error) {
+
+    }
+}
+
+
+
+export const createRoom = async (req, res, next) => {
+    try {
+        const {userId, name} = req.body
+        console.log(userId, name);
+        const existingRoom = await ChatRoom.findOne({name: name})
+        if(!existingRoom){
+            const newRoom = new ChatRoom({
+                name: name,
+                admin: userId,
+            })
+    
+            let save = newRoom.save()
+            if(save){
+               return res.status(200).json({message:"Room created successfully"})
+            }
+        }
+        res.status(409).json({error: "Something went wrong try diffrent Name"})
+    } catch (error) {
+        res.status(500).json({error: "Internal server error"})
+    }
+}
+
+
+
+export const friendrequest = async(req, res, next) =>{
+    try {
+        const {senderId, receiverId} = req.body
+        const sender = await User.findById(senderId)
+        const receiver = await User.findById(receiverId);
+
+        if(!sender || !receiver){
+            return res.status(404).json({error: 'User not Found!'})
+        }
         
+        const newNotification = new notification({
+            type: 'follow_request', sender: senderId
+        });
+        
+        await newNotification.save();
+        
+        receiver.notification.push(newNotification._id)
+        await receiver.save()
+
+        res.status(200).json({message: "Friend Request send Successfully"})
+    } catch (error) {
+        res.status(500).json({error: "Internal server Error"})
     }
 }
 
@@ -171,18 +224,18 @@ export const roomMessages = async (req, res, next) => {
     try {
         // const { roomId } = req.params;
         // console.log(roomId, 'this is room id');
-        
+
         // // Check if the roomId is a valid ObjectId
         // if (!mongoose.Types.ObjectId.isValid(roomId)) {
         //     return res.status(400).json({ message: 'Invalid room ID format' });
         // }
-        
+
         // // Fetch the messages for the room
         // const messages = await Message.find({ chatRoomId: roomId })
         //     .sort({ timestamp: 1 })
         //     .populate('sender', 'name')  // Populating the sender field with the user name
         //     .exec();
-        
+
         // res.status(200).json(messages || []);
     } catch (error) {
         console.error('Error fetching messages:', error);

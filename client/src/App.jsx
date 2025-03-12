@@ -7,6 +7,8 @@ import Chat from "./pages/Chat";
 import PrivateRoute from "./components/PrivateRoute";
 import Header from "./components/Header";
 import Profile from "./pages/Profile";
+import Explore from "./pages/Explore";
+import Notification from "./pages/Notification";
 
 const App = () => {
   return (
@@ -17,9 +19,11 @@ const App = () => {
 
       {/* Routes where Header should be shown */}
       <Route element={<PrivateRoute />}>
-        <Route path="/" element={<><Header /><Home /></>} />
-        <Route path="/chat" element={<><Header /><Chat /></>} />
-        <Route path="/profile" element={<><Header /><Profile /></>} />
+        <Route path="/" element={<> <Header /> <Home /> </>} />
+        <Route path="/chat" element={<> <Header /> <Chat /> </>} />
+        <Route path="/profile" element={<> <Header /> <Profile /> </>} />
+        <Route path="/explore" element={<> <Header /> <Explore /> </>} />
+        <Route path="/notifications" element={<> <Header /> <Notification /> </>} />
       </Route>
 
 
