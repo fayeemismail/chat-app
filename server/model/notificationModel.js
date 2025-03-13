@@ -4,12 +4,16 @@ const { Schema } = mongoose;
 const notificationSchema = new Schema({
     type:{
         type: String,
-        enum:["follow_request", "new_room", "message", "mention"],
+        enum:["follow_request", "new_room", "message", "mention", "new_follower"],
         required: true
     },
     sender:{
         type: Schema.Types.ObjectId,
         ref: 'User'
+    },
+    receiver:{
+        type: Schema.Types.ObjectId,
+        ref: "User"
     },
     room: {
         type: Schema.Types.ObjectId,

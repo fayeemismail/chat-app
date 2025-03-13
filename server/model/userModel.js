@@ -16,10 +16,6 @@ const userSchema = new Schema({
         type:String,
         required: true
     },
-    friends:[{
-        type:Schema.Types.ObjectId,
-        ref: 'User'
-    }],
     profilePhoto:{
         type:String,
         default: ''
@@ -44,6 +40,18 @@ const userSchema = new Schema({
     notification:[{
         type: Schema.Types.ObjectId,
         ref: "notification"
+    }],
+    pendingRequest:[{
+        type: Schema.Types.ObjectId,
+        ref:"User"
+    }],
+    followers:[{
+        type: Schema.Types.ObjectId, 
+        ref: "User"
+    }],
+    following:[{
+        type: Schema.Types.ObjectId,
+        ref: "User"
     }]
 });
 

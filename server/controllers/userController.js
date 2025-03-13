@@ -191,7 +191,7 @@ export const createRoom = async (req, res, next) => {
 
 
 
-export const friendrequest = async(req, res, next) =>{
+export const sendFriendRequest = async(req, res, next) =>{
     try {
         const {senderId, receiverId} = req.body
         const sender = await User.findById(senderId)
@@ -201,20 +201,89 @@ export const friendrequest = async(req, res, next) =>{
             return res.status(404).json({error: 'User not Found!'})
         }
         
-        const newNotification = new notification({
-            type: 'follow_request', sender: senderId
-        });
-        
-        await newNotification.save();
-        
-        receiver.notification.push(newNotification._id)
-        await receiver.save()
+        const existingRequest = await notification.findOne({
+            sender: senderId,
+            receiver: receiverId,
+            type: "follow_request"
+        })
 
-        res.status(200).json({message: "Friend Request send Successfully"})
+        if(existingRequest){
+            return res.status(400).json({error: "follow request is already sent"})
+        }
+
+
+        if(!receiver.isPrivate){
+            if(!receiver.followers.includes(senderId)){
+                receiver.followers.push(senderId);
+                sender.following.push(receiverId)
+                await sender.save();
+                await receiver.save();
+
+
+                const followNotification = new notification({
+                    type: 'new_follower',
+                    sender: senderId,
+                    receiver: receiverId
+                })
+
+                await followNotification.save();
+                receiver.notification.push(followNotification._id);
+                await receiver.save()
+
+                return res.status(200).json({message: "Followed successfully", followed: true})
+            }
+            return res.status(400).json({error: "Already following this user"})
+        }
+
+
+        if(!receiver.pendingRequest.includes(senderId)){
+            receiver.pendingRequest.push(senderId);
+            await receiver.save();
+
+            const newRequestNotification = new notification({
+                type: "follow_request",
+                sender: senderId,
+                receiver: receiverId
+            });
+
+            await newRequestNotification.save();
+            receiver.notification.push(newRequestNotification._id);
+            await receiver.save()
+
+            res.status(200).json({message: "Follow request sent successfully", requested: true})
+
+        }
+
     } catch (error) {
         res.status(500).json({error: "Internal server Error"})
     }
 }
+
+
+
+
+export const notificationPage = async (req, res, next) =>{
+    try {
+        const {userId} = req.query;
+        const user = await User.findById(userId).populate("notification");
+
+        if(!user){
+            return res.status(404).json({error: "User Not found"});
+        };
+
+
+        const allNotifications = await notification.find({ _id: { $in: user.notification } })
+        .populate("sender", "name profilePhoto");
+        console.log(allNotifications)
+        res.status(200).json(allNotifications);
+
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error: "Internal server Error"})
+    }
+}
+
 
 
 
