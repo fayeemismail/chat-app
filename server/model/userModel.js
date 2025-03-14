@@ -1,5 +1,4 @@
 import mongoose, { mongo } from "mongoose";
-import notification from "./notificationModel.js";
 const {Schema} = mongoose; 
 
 const userSchema = new Schema({
@@ -37,10 +36,6 @@ const userSchema = new Schema({
         type: String,
         default: '',
     },
-    notification:[{
-        type: Schema.Types.ObjectId,
-        ref: "notification"
-    }],
     pendingRequest:[{
         type: Schema.Types.ObjectId,
         ref:"User"
@@ -52,6 +47,11 @@ const userSchema = new Schema({
     following:[{
         type: Schema.Types.ObjectId,
         ref: "User"
+    }],
+    notifications:[{
+        sender: {type: Schema.Types.ObjectId, ref: "User"},
+        type: { type: String, enum:['follow_request', 'new_follower', 'new_room']},
+        createdAt: {type: Date, default: Date.now}
     }]
 });
 

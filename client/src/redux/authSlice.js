@@ -6,6 +6,7 @@ export const login = createAsyncThunk(
     async (credentials, { rejectWithValue }) => {
         try {
             const response = await axios.post('/api/auth/signin', credentials);
+            console.log(response, 'this is response')
 
             // Return user and token from the backend
             return {

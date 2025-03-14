@@ -1,14 +1,26 @@
 import express from 'express';
-import { createRoom, findRoom, findUsers, notificationPage, profilePage, sendFriendRequest } from '../controllers/userController.js';
+import { 
+    acceptFriendRequest, 
+    createRoom, 
+    explore, 
+    findRoom, 
+    findUsers, 
+    getFollowingStatus, 
+    notificationPage, 
+    profilePage, 
+    sendFriendRequest } from '../controllers/userController.js';
 
 
 const router = express.Router()
 
 router.get('/findUser', findUsers)
 router.get('/findRoom', findRoom);
+router.get('/explore', explore);
+router.post('/sendFollow', sendFriendRequest);
+router.get('/following', getFollowingStatus);
 router.get('/profile', profilePage);
 router.post('/create-room', createRoom);
-router.post('/friendrequest', sendFriendRequest);
 router.get('/notifications', notificationPage);
+router.post('/acceptFriendRequest', acceptFriendRequest)
 
 export default router;

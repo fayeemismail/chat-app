@@ -5,7 +5,6 @@ import dotenv, { populate } from 'dotenv';
 import Message from "../model/messageModel.js";
 import ChatRoom from "../model/chatRoomModel.js";
 import mongoose from "mongoose";
-import notification from "../model/notificationModel.js";
 
 dotenv.config();
 
@@ -106,7 +105,6 @@ export const signin = async (req, res, next) => {
             secure: true,
             sameSite: 'strict',
         });
-
         res.status(200).json({
             message: 'Login Successful!',
             token,
@@ -114,7 +112,11 @@ export const signin = async (req, res, next) => {
                 id: existingUser._id,
                 name: existingUser.name,
                 email: existingUser.email,
-                // Add other user details if needed
+                followers: existingUser.followers,
+                following: existingUser.following,
+                notification: existingUser.notification,
+                isPrivate: existingUser.isPrivate,
+                pendingRequest: existingUser.pendingRequest
             },
         });
 
@@ -155,6 +157,106 @@ export const findRoom = async (req, res, next) => {
     }
 }
 
+export const explore = async(req, res, next) => {
+    try {
+        const {userId} = req.query
+        const users = await User.find({ _id:{ $ne: userId } })
+        res.json(users)
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error: "Internal server error"})
+    }
+}
+
+
+export const getFollowingStatus = async (req, res) => {
+    try {
+        const { userId } = req.query;
+        const user = await User.findById(userId).populate("following");
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const followData = user.following.map(followingUser => ({
+            _id: followingUser._id,
+            status: "Following"
+        }));
+
+        // Check for pending requests in the notification array
+        const requestedUsers = await User.find({
+            "notifications.sender": userId,
+            "notifications.type": "follow_request",
+        });
+
+        requestedUsers.forEach(requestedUser => {
+            followData.push({
+                _id: requestedUser._id,
+                status: "Requested"
+            });
+        });
+
+        res.json(followData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+
+
+export const sendFriendRequest = async(req, res, next) =>{
+    try {
+        const { targetUserId, currentUserId } = req.body;
+        const user = await User.findById(currentUserId);
+        const targetUser = await User.findById(targetUserId);
+
+        if (!targetUser) {
+            return res.status(404).json({ error: 'User not Found!' });
+        }
+
+        if (targetUser.isPrivate) {
+            // Check if request already exists in notifications
+            const alreadyRequested = targetUser.notifications.some(
+                (notification) => notification.sender.toString() === currentUserId
+            );
+
+            if (!alreadyRequested) {
+                targetUser.notifications.push({
+                    sender: currentUserId,
+                    type: "follow_request",
+                    message: `${user.name} sent you a follow request.`,
+                });
+                targetUser.pendingRequest.push(currentUserId)
+                await targetUser.save();
+                return res.json({ success: true, message: "Follow request sent" });
+            }
+
+            return res.json({ success: false, message: "Request already sent" });
+        }
+
+        if (!user.following.includes(targetUserId)) {
+            user.following.push(targetUserId);
+            await user.save();
+        }
+
+        if (!targetUser.followers.includes(currentUserId)) {
+            targetUser.followers.push(currentUserId);
+            await targetUser.save();
+        }
+        
+        res.json({ success: true, message: "Followed successfully!" });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server Error" });
+    }
+};
+
+
+
+
 export const profilePage = async (req, res, next) => {
     try {
         const { userId } = req.query
@@ -191,73 +293,8 @@ export const createRoom = async (req, res, next) => {
 
 
 
-export const sendFriendRequest = async(req, res, next) =>{
-    try {
-        const {senderId, receiverId} = req.body
-        const sender = await User.findById(senderId)
-        const receiver = await User.findById(receiverId);
-
-        if(!sender || !receiver){
-            return res.status(404).json({error: 'User not Found!'})
-        }
-        
-        const existingRequest = await notification.findOne({
-            sender: senderId,
-            receiver: receiverId,
-            type: "follow_request"
-        })
-
-        if(existingRequest){
-            return res.status(400).json({error: "follow request is already sent"})
-        }
 
 
-        if(!receiver.isPrivate){
-            if(!receiver.followers.includes(senderId)){
-                receiver.followers.push(senderId);
-                sender.following.push(receiverId)
-                await sender.save();
-                await receiver.save();
-
-
-                const followNotification = new notification({
-                    type: 'new_follower',
-                    sender: senderId,
-                    receiver: receiverId
-                })
-
-                await followNotification.save();
-                receiver.notification.push(followNotification._id);
-                await receiver.save()
-
-                return res.status(200).json({message: "Followed successfully", followed: true})
-            }
-            return res.status(400).json({error: "Already following this user"})
-        }
-
-
-        if(!receiver.pendingRequest.includes(senderId)){
-            receiver.pendingRequest.push(senderId);
-            await receiver.save();
-
-            const newRequestNotification = new notification({
-                type: "follow_request",
-                sender: senderId,
-                receiver: receiverId
-            });
-
-            await newRequestNotification.save();
-            receiver.notification.push(newRequestNotification._id);
-            await receiver.save()
-
-            res.status(200).json({message: "Follow request sent successfully", requested: true})
-
-        }
-
-    } catch (error) {
-        res.status(500).json({error: "Internal server Error"})
-    }
-}
 
 
 
@@ -265,18 +302,14 @@ export const sendFriendRequest = async(req, res, next) =>{
 export const notificationPage = async (req, res, next) =>{
     try {
         const {userId} = req.query;
-        const user = await User.findById(userId).populate("notification");
+        const userData = await User.findById(userId)
 
-        if(!user){
+        if(!userData){
             return res.status(404).json({error: "User Not found"});
         };
 
 
-        const allNotifications = await notification.find({ _id: { $in: user.notification } })
-        .populate("sender", "name profilePhoto");
-        console.log(allNotifications)
-        res.status(200).json(allNotifications);
-
+        
 
     } catch (error) {
         console.log(error)
@@ -284,6 +317,52 @@ export const notificationPage = async (req, res, next) =>{
     }
 }
 
+
+
+
+export const acceptFriendRequest = async (req, res, next) => {
+    try {
+        const { userId, requestedUserId } = req.body;
+        const user = await User.findById(userId);
+        const requestor = await User.findById(requestedUserId);
+
+        if (!user || !requestor) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Check if the requested user is already in the current user's followers list
+        const alreadyFollowing = user.followers.includes(requestedUserId);
+        if (alreadyFollowing) {
+            console.log('already following')
+            return res.status(400).json({ message: "Already following this user" });
+        }
+
+        // Check if the user is already in the requestor's following list
+        const alreadyFollower = requestor.following.includes(userId);
+        if (alreadyFollower) {
+            console.log('already follower')
+            return res.status(400).json({ message: "Already in your followers list" });
+        }
+
+        // Add the user to the followers list and the requested user to following
+        user.followers.push(requestedUserId);
+        requestor.following.push(userId);
+
+        await user.save();
+        await requestor.save();
+
+        // Check if the user is now following the requested user
+        const isFollowing = user.following.includes(requestedUserId);
+
+        res.status(200).json({
+            message: "Request Accepted",
+            isFollowing: isFollowing, // Send back the status of the following
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
 
 
 
