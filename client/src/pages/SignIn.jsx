@@ -12,9 +12,6 @@ const SignIn = () => {
     password: "",
   });
   const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth);
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem('darkMode') === 'true' || false;
-  });
 
   // Prevent infinite loop by only navigating if user is authenticated
   useEffect(() => {
