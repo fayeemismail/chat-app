@@ -19,7 +19,6 @@ const initializeSocket = (server) => {
       }
 
       users[userId] = socket.id;
-      console.log('user logged in');
 
       socket.emit('socket_id', socket.id);
     }

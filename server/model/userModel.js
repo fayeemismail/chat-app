@@ -50,7 +50,8 @@ const userSchema = new Schema({
     }],
     notifications:[{
         sender: {type: Schema.Types.ObjectId, ref: "User"},
-        type: { type: String, enum:['follow_request', 'new_follower', 'new_room']},
+        type: { type: String, enum:['follow_request', 'new_follower', 'new_room', 'accepted']},
+        message: { type: String },
         createdAt: {type: Date, default: Date.now}
     }]
 });

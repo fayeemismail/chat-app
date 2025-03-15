@@ -12,14 +12,27 @@ const SignIn = () => {
     password: "",
   });
   const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth);
-
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true' || false;
+  });
 
   // Prevent infinite loop by only navigating if user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/"); // Redirect to home page if authenticated
     }
-  }, [isAuthenticated, navigate]); // Only re-run if isAuthenticated changes
+  }, [isAuthenticated, navigate]);
+
+  const colors = {
+    bg:  '#F5F3EE',
+    border:  '#E2DFD6',
+    text:  '#1A1A1A',
+    secondaryText:  '#6D6459',
+    accent:  '#9B8759',
+    inputBg:  '#FCFAF6',
+    cardBg:  '#FCFAF6',
+    hoverBg:  '#F5F3EE',
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,13 +44,33 @@ const SignIn = () => {
     dispatch(login(form));
   };
 
+  const buttonStyle = {
+    backgroundColor: colors.accent,
+    color: colors.inputBg,
+    border: `1px solid ${colors.accent}`,
+    padding: '0.5rem',
+    borderRadius: '4px',
+    width: '100%',
+    transition: 'all 0.2s ease',
+  };
+
+  const inputStyle = {
+    backgroundColor: colors.inputBg,
+    color: colors.text,
+    border: `1px solid ${colors.border}`,
+    padding: '0.5rem',
+    borderRadius: '4px',
+    width: '100%',
+    marginTop: '0.25rem',
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-[400px] bg-white p-8 rounded-xl shadow-lg">
-        <h2 className="text-2xl font-semibold text-center mb-4">Sign In</h2>
+    <div className="flex min-h-screen items-center justify-center font-serif" style={{ backgroundColor: colors.bg }}>
+      <div className="w-[400px] p-8 rounded-sm shadow-sm" style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.border}` }}>
+        <h2 className="text-2xl font-bold text-center mb-6" style={{ color: colors.text }}>Sign In</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-600">
+            <label htmlFor="email" className="block text-sm font-medium" style={{ color: colors.text }}>
               Email
             </label>
             <input
@@ -47,12 +80,12 @@ const SignIn = () => {
               value={form.email}
               onChange={handleChange}
               placeholder="Enter your email"
-              className="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              style={inputStyle}
               required
             />
           </div>
           <div className="relative">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-600">
+            <label htmlFor="password" className="block text-sm font-medium" style={{ color: colors.text }}>
               Password
             </label>
             <input
@@ -62,13 +95,14 @@ const SignIn = () => {
               value={form.password}
               onChange={handleChange}
               placeholder="Enter your password"
-              className="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              style={inputStyle}
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
+            style={buttonStyle}
+            className="hover:opacity-90 transition-opacity"
             disabled={loading}
           >
             {loading ? "Logging in..." : "Sign In"}
@@ -76,14 +110,14 @@ const SignIn = () => {
         </form>
 
         {error && (
-          <div className="mt-4 text-center text-sm text-red-500">
+          <div className="mt-4 text-center text-sm" style={{ color: "#E53E3E" }}>
             {error}
           </div>
         )}
 
-        <p className="mt-4 text-center text-sm">
+        <p className="mt-4 text-center text-sm" style={{ color: colors.secondaryText }}>
           Don't have an account?{" "}
-          <a href="/sign-up" className="text-blue-500 hover:underline">
+          <a href="/sign-up" style={{ color: colors.accent }} className="hover:underline">
             Sign Up
           </a>
         </p>

@@ -15,12 +15,17 @@ const router = express.Router()
 
 router.get('/findUser', findUsers)
 router.get('/findRoom', findRoom);
+
+//explore Page
 router.get('/explore', explore);
 router.post('/sendFollow', sendFriendRequest);
 router.get('/following', getFollowingStatus);
+
+//Notification Page
+router.get('/notifications', notificationPage);
+router.post('/accept_request', acceptFriendRequest)
+
 router.get('/profile', profilePage);
 router.post('/create-room', createRoom);
-router.get('/notifications', notificationPage);
-router.post('/acceptFriendRequest', acceptFriendRequest)
 
 export default router;

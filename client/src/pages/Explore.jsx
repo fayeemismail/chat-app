@@ -6,8 +6,32 @@ const Explore = () => {
     const [users, setUsers] = useState([]);
     const [following, setFollowing] = useState({});
     const currentUser = useSelector((state) => state.auth.user);
+    
+    // Initialize darkMode state from localStorage
+    const [darkMode, setDarkMode] = useState(() => {
+        return localStorage.getItem('darkMode') === 'true' || false;
+    });
 
     useEffect(() => {
+        // Listen for changes to localStorage from other components
+        const handleStorageChange = (e) => {
+            if (e.key === 'darkMode') {
+                setDarkMode(e.newValue === 'true');
+            }
+        };
+        
+        // Also check if darkMode value changes while component is mounted
+        const checkDarkMode = () => {
+            const currentSetting = localStorage.getItem('darkMode') === 'true';
+            if (currentSetting !== darkMode) {
+                setDarkMode(currentSetting);
+            }
+        };
+        
+        // Check periodically for changes (since storage event doesn't fire in same window)
+        const intervalId = setInterval(checkDarkMode, 500);
+        window.addEventListener('storage', handleStorageChange);
+        
         const fetchUsersAndFollowStatus = async () => {
             try {
                 // Fetch users
@@ -30,9 +54,13 @@ const Explore = () => {
         };
     
         fetchUsersAndFollowStatus();
-    }, [currentUser.id]);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            clearInterval(intervalId);
+        };
+    }, [currentUser.id, darkMode]);
     
-
     const handleFollow = async (userId, isPrivate) => {
         try {
             // Prevent duplicate request updates
@@ -49,32 +77,72 @@ const Explore = () => {
         }
     };
     
+    // Define theme colors based on dark mode state (same as in Header and Home)
+    const colors = {
+        bg: darkMode ? '#1A1A1A' : '#F5F3EE',
+        border: darkMode ? '#333333' : '#E2DFD6',
+        text: darkMode ? '#E8E6E1' : '#1A1A1A',
+        secondaryText: darkMode ? '#A9A295' : '#6D6459',
+        accent: darkMode ? '#C9AD6A' : '#9B8759',
+        cardBg: darkMode ? '#2A2A2A' : '#FCFAF6',
+        btnBg: darkMode ? '#3E3D39' : '#3E3D39',
+        btnText: darkMode ? '#FCFAF6' : '#FCFAF6',
+        btnHoverBg: darkMode ? '#2A2A28' : '#2A2A28',
+    };
+    
     return (
-        <div className="min-h-screen bg-[#F5F1E3] text-[#4A403A] font-serif">
-            <div className="max-w-5xl mx-auto p-6">
-                <h1 className="text-4xl font-bold text-center text-[#2C2A29] mb-10">
-                    Explore People
+        <div style={{ 
+            backgroundColor: colors.bg, 
+            color: colors.text,
+            minHeight: '100vh'
+        }} className="font-serif">
+            <div className="max-w-5xl mx-auto p-8">
+                <h1 className="text-4xl font-bold text-center mb-12 tracking-tight" style={{ color: colors.text }}>
+                    <span style={{ borderBottom: `2px solid ${colors.accent}`, paddingBottom: '0.5rem' }}>Discover Community</span>
                 </h1>
-                <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {users.map((user) => (
                         <div
                             key={user._id}
-                            className="bg-[#EDE3D9] p-4 rounded-lg shadow-md hover:shadow-lg transition-all border border-[#C2B8A3] flex items-center space-x-4"
+                            style={{
+                                backgroundColor: colors.cardBg,
+                                borderColor: colors.border,
+                                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                            }}
+                            className="p-6 rounded-md hover:shadow-md transition-all border flex flex-col items-center"
                         >
-                            <img
-                                src={user.profilePicture }
-                                alt={user.name}
-                                className="w-16 h-16 rounded-full border-2 border-[#A68A64] object-cover"
-                            />
-                            <div className="flex-1">
-                                <h2 className="text-md font-bold text-[#2C2A29]">{user.name}</h2>
-                                <p className="text-sm text-[#6D6459] italic">Followers: {user.followers?.length || 0}</p>
-                                <button
-                                    onClick={() => handleFollow(user._id, user.isPrivate)}
-                                    className="mt-2 bg-[#A68A64] text-white py-1 px-3 rounded-full text-sm font-semibold hover:bg-[#8C7357] transition-all"
-                                >
-                                    {following[user._id] || "Follow"}
-                                </button>
+                            <div className="w-20 h-20 mb-4 relative">
+                                <div className="absolute inset-0 rounded-full border-2 transform -rotate-3" style={{ borderColor: colors.accent }}></div>
+                                <img
+                                    src={user.profilePicture}
+                                    alt={user.name}
+                                    className="w-full h-full rounded-full border-2 object-cover shadow-sm"
+                                    style={{ borderColor: colors.accent }}
+                                />
+                            </div>
+                            
+                            <div className="text-center w-full">
+                                <h2 className="text-lg font-bold tracking-wide" style={{ color: colors.text }}>{user.name}</h2>
+                                <p className="text-sm mt-1 font-light" style={{ color: colors.secondaryText }}>
+                                    {user.followers?.length || 0} {user.followers?.length === 1 ? 'Follower' : 'Followers'}
+                                </p>
+                                
+                                <div className="mt-4 w-full flex justify-center">
+                                    <button
+                                        onClick={() => handleFollow(user._id, user.isPrivate)}
+                                        className={`
+                                            py-2 px-6 text-xs tracking-wider uppercase
+                                            border rounded-sm font-medium transition-all
+                                        `}
+                                        style={following[user._id] 
+                                            ? { borderColor: colors.accent, color: colors.accent, backgroundColor: 'transparent' }
+                                            : { borderColor: colors.btnBg, color: colors.btnText, backgroundColor: colors.btnBg }
+                                        }
+                                    >
+                                        {following[user._id] || "Follow"}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}

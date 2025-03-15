@@ -160,7 +160,8 @@ export const findRoom = async (req, res, next) => {
 export const explore = async(req, res, next) => {
     try {
         const {userId} = req.query
-        const users = await User.find({ _id:{ $ne: userId } })
+        const loggedUser = await User.findById(userId)
+        const users = await User.find({ _id:{ $ne: userId, $nin: loggedUser.following } })
         res.json(users)
     } catch (error) {
         console.log(error)
@@ -243,6 +244,11 @@ export const sendFriendRequest = async(req, res, next) =>{
 
         if (!targetUser.followers.includes(currentUserId)) {
             targetUser.followers.push(currentUserId);
+            targetUser.notifications.push({
+                sender: currentUserId,
+                type: "new_follower",
+                message: `${user.name} followed you`
+            })
             await targetUser.save();
         }
         
@@ -299,70 +305,75 @@ export const createRoom = async (req, res, next) => {
 
 
 
-export const notificationPage = async (req, res, next) =>{
+export const notificationPage = async (req, res, next) => {
     try {
-        const {userId} = req.query;
-        const userData = await User.findById(userId)
+        const { userId } = req.query;
 
-        if(!userData){
-            return res.status(404).json({error: "User Not found"});
-        };
+        // Find the user
+        const userData = await User.findById(userId).populate('notifications.sender');
 
+        if (!userData) {
+            return res.status(404).json({ error: "User Not found" });
+        }
 
         
+        res.json(userData.notifications);
 
     } catch (error) {
-        console.log(error)
-        res.status(500).json({error: "Internal server Error"})
+        console.log(error);
+        res.status(500).json({ error: "Internal server Error" });
     }
-}
+};
+
 
 
 
 
 export const acceptFriendRequest = async (req, res, next) => {
     try {
-        const { userId, requestedUserId } = req.body;
-        const user = await User.findById(userId);
-        const requestor = await User.findById(requestedUserId);
+        const { userId, targetId, notificationId } = req.body;
 
-        if (!user || !requestor) {
-            return res.status(404).json({ error: "User not found" });
+        const currentUser = await User.findById(userId);
+        const targetUser = await User.findById(targetId);
+
+        if (!currentUser || !targetUser) {
+            return res.status(404).json({ error: "User not found!" });
         }
 
-        // Check if the requested user is already in the current user's followers list
-        const alreadyFollowing = user.followers.includes(requestedUserId);
-        if (alreadyFollowing) {
-            console.log('already following')
-            return res.status(400).json({ message: "Already following this user" });
+        // Check if targetId exists in pendingRequest array
+        if (!currentUser.pendingRequest.includes(targetId)) {
+            return res.status(404).json({ error: "No request found" });
         }
 
-        // Check if the user is already in the requestor's following list
-        const alreadyFollower = requestor.following.includes(userId);
-        if (alreadyFollower) {
-            console.log('already follower')
-            return res.status(400).json({ message: "Already in your followers list" });
+        // Remove targetId from pendingRequest
+        currentUser.pendingRequest = currentUser.pendingRequest.filter(id => id.toString() !== targetId);
+
+        // Find the specific notification
+        const notificationIndex = currentUser.notifications.findIndex(
+            notification => notification.sender.toString() === targetId && notification._id.toString() === notificationId
+        );
+
+        if (notificationIndex !== -1) {
+            currentUser.notifications[notificationIndex].type = 'new_follower';
         }
 
-        // Add the user to the followers list and the requested user to following
-        user.followers.push(requestedUserId);
-        requestor.following.push(userId);
 
-        await user.save();
-        await requestor.save();
+        currentUser.followers.push(targetId);
+        targetUser.following.push(userId);
+        await targetUser.save()
 
-        // Check if the user is now following the requested user
-        const isFollowing = user.following.includes(requestedUserId);
-
-        res.status(200).json({
-            message: "Request Accepted",
-            isFollowing: isFollowing, // Send back the status of the following
-        });
+        // Save changes
+        let save = await currentUser.save();
+        if(save){
+            console.log('saved')
+            return res.status(200).json({ message: "Friend request accepted" });
+        }
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ error: "Internal server error" });
     }
 };
+
 
 
 
