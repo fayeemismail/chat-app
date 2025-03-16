@@ -47,6 +47,25 @@ export const checkToken = createAsyncThunk(
     }
 );
 
+
+export const updateProfile = createAsyncThunk(
+    'auth/updateProfile',
+    async (updateData, { rejectWithValue, getState }) => {
+        try {
+            const { auth } = getState();
+            const response = await axios.put('/api/users/updtae-Profile', updateData,{ 
+                headers: {
+                    Authorization: `Bearer ${auth.token}`,
+                    "Content-Type": "multipart/form-data"
+                },
+            })
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.error || "Profile update Failed")
+        }
+    }
+)
+
 const initialState = {
     user: null,
     token: null,
@@ -99,6 +118,19 @@ const authSlice = createSlice({
             .addCase(logout.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            .addCase(updateProfile.pending, (state)=>{
+                state.loading = true;
+                state.error = null
+            })
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                state.user = action.payload;
+                state.loading = false;
+                state.error = null;
+            })
+            .addCase(updateProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = null
             })
             .addCase(checkToken.pending, (state) => {
                 state.loading = true;

@@ -9,6 +9,7 @@ import Header from "./components/Header";
 import Profile from "./pages/Profile";
 import Explore from "./pages/Explore";
 import Notification from "./pages/Notification";
+import EditProfile from "./pages/EditProfile";
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
         <Route path="/profile" element={<> <Header /> <Profile /> </>} />
         <Route path="/explore" element={<> <Header /> <Explore /> </>} />
         <Route path="/notifications" element={<> <Header /> <Notification /> </>} />
+        <Route path="/editProfile" element={<> <Header /> <EditProfile /> </>} />
       </Route>
 
 

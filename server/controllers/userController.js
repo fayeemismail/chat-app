@@ -379,6 +379,19 @@ export const acceptFriendRequest = async (req, res, next) => {
 
 
 
+export const editProfile = async (req, res, next) => {
+    try {
+        const { userId, name, bio, isPrivate, password, profilePicture, confirmPassword } = req.body
+        console.log(userId)
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({error: "Internal server Error"});
+    }
+}
+
+
+
+
 export const roomMessages = async (req, res, next) => {
     try {
         // const { roomId } = req.params;

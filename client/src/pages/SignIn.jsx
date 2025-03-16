@@ -64,7 +64,8 @@ const SignIn = () => {
   return (
     <div className="flex min-h-screen items-center justify-center font-serif" style={{ backgroundColor: colors.bg }}>
       <div className="w-[400px] p-8 rounded-sm shadow-sm" style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.border}` }}>
-        <h2 className="text-2xl font-bold text-center mb-6" style={{ color: colors.text }}>Sign In</h2>
+      <h1 className="text-3xl font-bold text-center mb-2" style={{ color: colors.text }}>Blah Blah....</h1>
+        <h2 className="text-2xl font-medium text-center mb-6" style={{ color: colors.text }}>Sign In</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium" style={{ color: colors.text }}>
