@@ -10,7 +10,6 @@ import Profile from './pages/Profile';
 import Explore from './pages/Explore';
 import Notification from './pages/Notification';
 import EditProfile from './pages/EditProfile';
-import ExeEditProfile from './pages/ExeEditProfile';
 
 const App = () => {
   return (
