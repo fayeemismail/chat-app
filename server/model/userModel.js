@@ -53,7 +53,11 @@ const userSchema = new Schema({
         type: { type: String, enum:['follow_request', 'new_follower', 'new_room', 'accepted']},
         message: { type: String },
         createdAt: {type: Date, default: Date.now}
-    }]
+    }],
+    bio:{
+        type: String,
+        default: ''
+    }
 });
 
 const User = mongoose.model('User', userSchema);

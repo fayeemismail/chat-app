@@ -1,34 +1,36 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { login } from "../redux/authSlice";
-import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '../redux/authSlice';
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 const SignIn = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
-  const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth);
+  const { loading, error, isAuthenticated, user } = useSelector(
+    (state) => state.auth
+  );
 
   // Prevent infinite loop by only navigating if user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/"); // Redirect to home page if authenticated
+      navigate('/'); // Redirect to home page if authenticated
     }
   }, [isAuthenticated, navigate]);
 
   const colors = {
-    bg:  '#F5F3EE',
-    border:  '#E2DFD6',
-    text:  '#1A1A1A',
-    secondaryText:  '#6D6459',
-    accent:  '#9B8759',
-    inputBg:  '#FCFAF6',
-    cardBg:  '#FCFAF6',
-    hoverBg:  '#F5F3EE',
+    bg: '#F5F3EE',
+    border: '#E2DFD6',
+    text: '#1A1A1A',
+    secondaryText: '#6D6459',
+    accent: '#9B8759',
+    inputBg: '#FCFAF6',
+    cardBg: '#FCFAF6',
+    hoverBg: '#F5F3EE',
   };
 
   const handleChange = (e) => {
@@ -62,13 +64,36 @@ const SignIn = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center font-serif" style={{ backgroundColor: colors.bg }}>
-      <div className="w-[400px] p-8 rounded-sm shadow-sm" style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.border}` }}>
-      <h1 className="text-3xl font-bold text-center mb-2" style={{ color: colors.text }}>Blah Blah....</h1>
-        <h2 className="text-2xl font-medium text-center mb-6" style={{ color: colors.text }}>Sign In</h2>
+    <div
+      className="flex min-h-screen items-center justify-center font-serif"
+      style={{ backgroundColor: colors.bg }}
+    >
+      <div
+        className="w-[400px] p-8 rounded-sm shadow-sm"
+        style={{
+          backgroundColor: colors.cardBg,
+          border: `1px solid ${colors.border}`,
+        }}
+      >
+        <h1
+          className="text-3xl font-bold text-center mb-2"
+          style={{ color: colors.text }}
+        >
+          Blah Blah....
+        </h1>
+        <h2
+          className="text-2xl font-medium text-center mb-6"
+          style={{ color: colors.text }}
+        >
+          Sign In
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium" style={{ color: colors.text }}>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium"
+              style={{ color: colors.text }}
+            >
               Email
             </label>
             <input
@@ -83,7 +108,11 @@ const SignIn = () => {
             />
           </div>
           <div className="relative">
-            <label htmlFor="password" className="block text-sm font-medium" style={{ color: colors.text }}>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium"
+              style={{ color: colors.text }}
+            >
               Password
             </label>
             <input
@@ -103,19 +132,29 @@ const SignIn = () => {
             className="hover:opacity-90 transition-opacity"
             disabled={loading}
           >
-            {loading ? "Logging in..." : "Sign In"}
+            {loading ? 'Logging in...' : 'Sign In'}
           </button>
         </form>
 
         {error && (
-          <div className="mt-4 text-center text-sm" style={{ color: "#E53E3E" }}>
+          <div
+            className="mt-4 text-center text-sm"
+            style={{ color: '#E53E3E' }}
+          >
             {error}
           </div>
         )}
 
-        <p className="mt-4 text-center text-sm" style={{ color: colors.secondaryText }}>
-          Don't have an account?{" "}
-          <a href="/sign-up" style={{ color: colors.accent }} className="hover:underline">
+        <p
+          className="mt-4 text-center text-sm"
+          style={{ color: colors.secondaryText }}
+        >
+          Don't have an account?{' '}
+          <a
+            href="/sign-up"
+            style={{ color: colors.accent }}
+            className="hover:underline"
+          >
             Sign Up
           </a>
         </p>

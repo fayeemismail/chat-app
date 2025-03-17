@@ -6,21 +6,21 @@ import {
     editProfile, 
     explore, 
     findRoom, 
+    findSpecificUser, 
     findUsers, 
     getFollowingStatus, 
     notificationPage, 
     profilePage, 
-    sendFriendRequest 
+    sendFriendRequest,
+    upload, 
 } from '../controllers/userController.js';
 
 
 const router = express.Router()
 
-//Initializing multer for file Uploading
-const storage = multer.memoryStorage();
-const upload = multer({ storage })
 
 
+router.get('/findSpecificUser', findSpecificUser)
 
 router.get('/findUser', findUsers)
 router.get('/findRoom', findRoom);
@@ -36,7 +36,7 @@ router.post('/accept_request', acceptFriendRequest)
 
 //Profile Page
 router.get('/profile', profilePage);
-router.post('/update-profile', upload.single('profilePicture'), editProfile)
+router.put('/update-profile', upload.single('profilePicture'), editProfile)
 
 
 router.post('/create-room', createRoom);

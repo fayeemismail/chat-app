@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,19 +23,19 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
-      setErrorMessage("");
+      setErrorMessage('');
       setLoading(true);
 
       if (form.password !== form.confirmPassword) {
-        setErrorMessage("Passwords do not match!");
+        setErrorMessage('Passwords do not match!');
         setLoading(false);
         return;
       }
 
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(form),
       });
@@ -44,18 +44,18 @@ const Signup = () => {
 
       if (res.ok) {
         Swal.fire({
-          icon: "success",
-          title: "User Created Successfully!",
-          text: "You can now log in to your account.",
+          icon: 'success',
+          title: 'User Created Successfully!',
+          text: 'You can now log in to your account.',
         }).then(() => {
-          navigate("/sign-in");
+          navigate('/sign-in');
         });
       } else {
-        setErrorMessage(data.error || "Something went wrong!");
+        setErrorMessage(data.error || 'Something went wrong!');
       }
     } catch (error) {
       console.log(error);
-      setErrorMessage("Something went wrong!");
+      setErrorMessage('Something went wrong!');
     } finally {
       setLoading(false);
     }
@@ -64,10 +64,15 @@ const Signup = () => {
   return (
     <div className="flex min-h-screen items-center justify-center font-serif bg-[#F5F3EE]">
       <div className="w-[400px] p-8 rounded-sm shadow-sm bg-[#FCFAF6] border border-[#E2DFD6]">
-        <h2 className="text-2xl font-bold text-center mb-6 text-[#1A1A1A]">Create an Account</h2>
+        <h2 className="text-2xl font-bold text-center mb-6 text-[#1A1A1A]">
+          Create an Account
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-[#1A1A1A]">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-[#1A1A1A]"
+            >
               Name
             </label>
             <input
@@ -82,7 +87,10 @@ const Signup = () => {
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-[#1A1A1A]">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-[#1A1A1A]"
+            >
               Email
             </label>
             <input
@@ -97,11 +105,14 @@ const Signup = () => {
             />
           </div>
           <div className="relative">
-            <label htmlFor="password" className="block text-sm font-medium text-[#1A1A1A]">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-[#1A1A1A]"
+            >
               Password
             </label>
             <input
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               id="password"
               name="password"
               value={form.password}
@@ -115,15 +126,18 @@ const Signup = () => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-9 text-[#9B8759] border border-[#9B8759] px-2 py-0.5 text-xs rounded-sm hover:opacity-90"
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? 'Hide' : 'Show'}
             </button>
           </div>
           <div className="relative">
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#1A1A1A]">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-[#1A1A1A]"
+            >
               Confirm Password
             </label>
             <input
-              type={showConfirmPassword ? "text" : "password"}
+              type={showConfirmPassword ? 'text' : 'password'}
               id="confirmPassword"
               name="confirmPassword"
               value={form.confirmPassword}
@@ -137,7 +151,7 @@ const Signup = () => {
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-9 text-[#9B8759] border border-[#9B8759] px-2 py-0.5 text-xs rounded-sm hover:opacity-90"
             >
-              {showConfirmPassword ? "Hide" : "Show"}
+              {showConfirmPassword ? 'Hide' : 'Show'}
             </button>
           </div>
           <button
@@ -145,7 +159,7 @@ const Signup = () => {
             className="w-full py-2 bg-[#9B8759] text-[#FCFAF6] border border-[#9B8759] rounded-sm hover:opacity-90 transition-opacity disabled:opacity-70"
             disabled={loading}
           >
-            {loading ? "Signing up..." : "Sign Up"}
+            {loading ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
 
@@ -156,7 +170,7 @@ const Signup = () => {
         )}
 
         <p className="mt-4 text-center text-sm text-[#6D6459]">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <a href="/sign-in" className="text-[#9B8759] hover:underline">
             Login
           </a>

@@ -1,10 +1,16 @@
 import User from "../model/userModel.js";
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import dotenv, { populate } from 'dotenv';
 import Message from "../model/messageModel.js";
 import ChatRoom from "../model/chatRoomModel.js";
 import mongoose from "mongoose";
+import multer from 'multer';
+
+import dotenv from 'dotenv';
+import cloudinary from '../config/cloudinary.js';
+
+const storage = multer.memoryStorage();
+export const upload = multer({storage})
 
 dotenv.config();
 
@@ -66,6 +72,20 @@ export const signup = async (req, res, next) => {
     }
 }
 
+
+export const findSpecificUser = async(req, res, next) => {
+    try {
+        const { userId } = req.query
+        const userData = await User.findById(userId);
+        if(!userData){
+            return res.status(404).json({error: "User not found"});
+        } 
+        res.status(200).json(userData)
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Internal server Error" })
+    }
+}
 
 
 export const signin = async (req, res, next) => {
@@ -379,15 +399,55 @@ export const acceptFriendRequest = async (req, res, next) => {
 
 
 
-export const editProfile = async (req, res, next) => {
+export const editProfile = async (req, res) => {
     try {
-        const { userId, name, bio, isPrivate, password, profilePicture, confirmPassword } = req.body
-        console.log(userId)
+        const { userId, name, bio, isPrivate, password, confirmPassword } = req.body;
+
+        // Find user in the database
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Password change logic
+        if (password || confirmPassword) {
+            if (!passwordValidation(password)) {
+                return res.status(400).json({ error: "Password must contain at least one digit." });
+            }
+            if (password !== confirmPassword) {
+                return res.status(400).json({ error: "Passwords do not match." });
+            }
+            user.password = await bcryptjs.hash(password, 10);
+        }
+
+        // Update user fields
+        if (name) user.name = name;
+        if (bio) user.bio = bio;
+        if (isPrivate !== undefined) user.isPrivate = isPrivate;
+
+        // Handle profile picture upload
+        if (req.file) {
+            try {
+                const fileStr = `data:image/jpeg;base64,${req.file.buffer.toString('base64')}`;
+                const result = await cloudinary.uploader.upload(fileStr);
+                console.log(result.secure_url, 'this is reslut')
+                user.profilePhoto = result.secure_url;
+            } catch (uploadError) {
+                console.error("Cloudinary upload failed:", uploadError);
+                return res.status(500).json({ error: "File upload failed" });
+            }
+        }
+
+        // Save user to the database
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Profile updated successfully", user });
+
     } catch (error) {
-        console.log(error);
-        res.status(500).json({error: "Internal server Error"});
+        console.error("Error updating profile:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
-}
+};
 
 
 

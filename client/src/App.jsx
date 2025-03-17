@@ -1,15 +1,16 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
-import Signup from "./pages/Signup";
-import SignIn from "./pages/SignIn";
-import Home from "./pages/Home";
-import Chat from "./pages/Chat";
-import PrivateRoute from "./components/PrivateRoute";
-import Header from "./components/Header";
-import Profile from "./pages/Profile";
-import Explore from "./pages/Explore";
-import Notification from "./pages/Notification";
-import EditProfile from "./pages/EditProfile";
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Signup from './pages/Signup';
+import SignIn from './pages/SignIn';
+import Home from './pages/Home';
+import Chat from './pages/Chat';
+import PrivateRoute from './components/PrivateRoute';
+import Header from './components/Header';
+import Profile from './pages/Profile';
+import Explore from './pages/Explore';
+import Notification from './pages/Notification';
+import EditProfile from './pages/EditProfile';
+import ExeEditProfile from './pages/ExeEditProfile';
 
 const App = () => {
   return (
@@ -20,15 +21,61 @@ const App = () => {
 
       {/* Routes where Header should be shown */}
       <Route element={<PrivateRoute />}>
-        <Route path="/" element={<> <Header /> <Home /> </>} />
-        <Route path="/chat" element={<> <Header /> <Chat /> </>} />
-        <Route path="/profile" element={<> <Header /> <Profile /> </>} />
-        <Route path="/explore" element={<> <Header /> <Explore /> </>} />
-        <Route path="/notifications" element={<> <Header /> <Notification /> </>} />
-        <Route path="/editProfile" element={<> <Header /> <EditProfile /> </>} />
+        <Route
+          path="/"
+          element={
+            <>
+              {' '}
+              <Header /> <Home />{' '}
+            </>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <>
+              {' '}
+              <Header /> <Chat />{' '}
+            </>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <>
+              {' '}
+              <Header /> <Profile />{' '}
+            </>
+          }
+        />
+        <Route
+          path="/explore"
+          element={
+            <>
+              {' '}
+              <Header /> <Explore />{' '}
+            </>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <>
+              {' '}
+              <Header /> <Notification />{' '}
+            </>
+          }
+        />
+        <Route
+          path="/editProfile"
+          element={
+            <>
+              {' '}
+              <Header /> <EditProfile />{' '}
+            </>
+          }
+        />
       </Route>
-
-
     </Routes>
   );
 };
