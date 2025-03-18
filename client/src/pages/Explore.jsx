@@ -137,12 +137,27 @@ const Explore = () => {
                   className="absolute inset-0 rounded-full border-2 transform -rotate-3"
                   style={{ borderColor: colors.accent }}
                 ></div>
+                {user.profilePhoto ? 
                 <img
-                  src={user.profilePicture}
+                  src={user.profilePhoto}
                   alt={user.name}
                   className="w-full h-full rounded-full border-2 object-cover shadow-sm"
                   style={{ borderColor: colors.accent }}
-                />
+                /> : <div
+                className={`w-full h-full flex items-center bg-[#2A2A2A] justify-center rounded-full border-2 shadow-sm text-white font-bold text-2xl ${darkMode
+                  ? 'bg-[#2A2A2A] border-2 border-[#C9AD6A] text-[#C9AD6A]'
+                  : 'bg-[#F5F3EE] border-2 border-[#9B8759] text-[#9B8759]'
+              }}`}
+                style={{ borderColor: colors.accent, backgroundColor: '#2A2A2A' }} // Set a background color
+              >
+                {user.name?.charAt(0) || "U"}
+              </div>
+              
+                
+              }
+
+
+
               </div>
 
               <div className="text-center w-full">

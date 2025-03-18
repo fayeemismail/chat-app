@@ -401,7 +401,7 @@ export const acceptFriendRequest = async (req, res, next) => {
 
 export const editProfile = async (req, res) => {
     try {
-        const { userId, name, bio, isPrivate, password, confirmPassword } = req.body;
+        const { userId, name, bio, isPrivate, password, profilePhoto , confirmPassword } = req.body;
 
         // Find user in the database
         const user = await User.findById(userId);
@@ -424,19 +424,9 @@ export const editProfile = async (req, res) => {
         if (name) user.name = name;
         if (bio) user.bio = bio;
         if (isPrivate !== undefined) user.isPrivate = isPrivate;
+        if(profilePhoto) user.profilePhoto = profilePhoto
 
-        // Handle profile picture upload
-        if (req.file) {
-            try {
-                const fileStr = `data:image/jpeg;base64,${req.file.buffer.toString('base64')}`;
-                const result = await cloudinary.uploader.upload(fileStr);
-                console.log(result.secure_url, 'this is reslut')
-                user.profilePhoto = result.secure_url;
-            } catch (uploadError) {
-                console.error("Cloudinary upload failed:", uploadError);
-                return res.status(500).json({ error: "File upload failed" });
-            }
-        }
+        
 
         // Save user to the database
         await user.save();

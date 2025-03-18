@@ -160,7 +160,7 @@ const Notifications = () => {
                 <div>
                   <p className="mb-1" style={{ color: colors.text }}>
                     {notification.type === 'follow_request'
-                      ? 'sent you a follow request'
+                      ?  `${notification.sender.name} Wants to follow you`
                       : notification.message}
                   </p>
                   <p

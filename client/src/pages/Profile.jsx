@@ -56,7 +56,7 @@ const Profile = () => {
 
   const handleEditProfile = async () => {
     try {
-      navigate('/exe-edit-profile');
+      navigate('/editProfile');
     } catch (error) {
       console.log(error);
     }
@@ -113,9 +113,9 @@ const Profile = () => {
                     : 'border border-[#9B8759]'
                 }`}
               ></div>
-              {user.profilePicture ? (
+              {user.profilePhoto ? (
                 <img
-                  src={user.profilePicture}
+                  src={user.profilePhoto}
                   alt="Profile"
                   className={`w-24 h-24 rounded-full object-cover relative z-10 ${
                     darkMode
