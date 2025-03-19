@@ -14,7 +14,7 @@ export const upload = multer({storage})
 
 dotenv.config();
 
-
+  
 
 const passwordValidation = (password) => {
     const regex = /\d/;
