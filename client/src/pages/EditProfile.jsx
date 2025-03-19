@@ -178,6 +178,7 @@ const EditProfile = () => {
                 return;
             }
             formDataToSend.append('password', formData.password);
+            formDataToSend.append('confirmPassword', formData.confirmPassword);
         }
         if (previewImage) {
             formDataToSend.append('profilePhoto', formData.profilePhoto); // Corrected field name
@@ -207,7 +208,6 @@ const EditProfile = () => {
                 <h1 className={styles.title}>
                     <span className={styles.titleBorder}>Edit Profile</span>
                 </h1>
-
                 <div className={styles.formContainer}>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Profile Image Upload */}

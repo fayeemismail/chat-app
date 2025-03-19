@@ -155,6 +155,7 @@ const Profile = () => {
                   ? 'bg-[#333333] border border-[#333333]'
                   : 'bg-[#F9F7F2] border border-[#E2DFD6]'
               }`}
+              onClick={()=> navigate(`/profile/${currentUser.id}/connections?tab=followers`)}
             >
               <div className="text-2xl font-medium">
                 {user.followers.length || 0}
@@ -173,6 +174,7 @@ const Profile = () => {
                   ? 'bg-[#333333] border border-[#333333]'
                   : 'bg-[#F9F7F2] border border-[#E2DFD6]'
               }`}
+              onClick={()=> navigate(`/profile/${currentUser.id}/connections?tab=following`)}
             >
               <div className="text-2xl font-medium">
                 {user.following.length || 0}

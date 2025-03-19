@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import Explore from './pages/Explore';
 import Notification from './pages/Notification';
 import EditProfile from './pages/EditProfile';
+import ConnectionPage from './pages/ConnectionPage';
 
 const App = () => {
   return (
@@ -75,6 +76,7 @@ const App = () => {
           }
         />
       </Route>
+      <Route path='/profile/:id/connections' element={ <> <Header /> <ConnectionPage /> </> } ></Route>
     </Routes>
   );
 };

@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer'
 import { 
     acceptFriendRequest, 
+    connections, 
     createRoom, 
     editProfile, 
     explore, 
@@ -12,6 +13,7 @@ import {
     notificationPage, 
     profilePage, 
     sendFriendRequest,
+    unFollowUser,
     upload, 
 } from '../controllers/userController.js';
 
@@ -37,6 +39,10 @@ router.post('/accept_request', acceptFriendRequest)
 //Profile Page
 router.get('/profile', profilePage);
 router.put('/update-profile', upload.single('profilePicture'), editProfile)
+
+//Following and Followers
+router.get('/connection',  connections)
+router.post('/unFollow', unFollowUser)
 
 
 router.post('/create-room', createRoom);
