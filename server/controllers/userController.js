@@ -8,6 +8,7 @@ import multer from 'multer';
 
 import dotenv from 'dotenv';
 import cloudinary from '../config/cloudinary.js';
+import generateToken from "../utils/generateToken.js";
 
 const storage = multer.memoryStorage();
 export const upload = multer({storage})
@@ -24,6 +25,30 @@ const emailValidation = (email) => {
     const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return regex.test(email);
 };
+
+
+export const refreshToken = async (req, res, next) => {
+    try {
+        const refreshToken = req.cookies.refreshToken
+        if(!refreshToken){
+            return res.status(403).json({error: "No refresh token Provided"})
+        }
+        jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, decoded) => {
+            if(err){
+                return res.status(403).json({error: "Invalid refresh Token"})
+            }
+            const newAccessToken = jwt.sign({userId: decoded.userId}, process.env.JWT_SECRET, {
+                expiresIn: '1h',
+            });
+
+            res.json({accessToken: newAccessToken})
+        });
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error: "Server Error"})
+    }
+}
 
 
 export const signup = async (req, res, next) => {
@@ -114,20 +139,17 @@ export const signin = async (req, res, next) => {
             return res.status(400).json({ error: 'Password Mismatch' });
         }
 
-        const token = jwt.sign(
-            { userId: existingUser._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
+        const { accessToken, refreshToken } = generateToken(existingUser._id)
 
-        res.cookie('token', token, {
+        res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 1000,
         });
         res.status(200).json({
             message: 'Login Successful!',
-            token,
+            accessToken,
             user: {
                 id: existingUser._id,
                 name: existingUser.name,

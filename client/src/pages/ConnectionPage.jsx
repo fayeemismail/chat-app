@@ -1,4 +1,4 @@
-import { useSearchParams, useParams } from "react-router-dom";
+import { useSearchParams, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -10,6 +10,7 @@ const ConnectionsPage = () => {
     const [followers, setFollowers] = useState([]);
     const [following, setFollowing] = useState([]);
     const currentUser = useSelector((state) => state.auth.user);
+    const navigate = useNavigate()
     
     const [darkMode, setDarkMode] = useState(() => {
       return localStorage.getItem("darkMode") === "true" || false;
@@ -75,6 +76,26 @@ const ConnectionsPage = () => {
             console.log(error)
         }
     }
+
+    const followBack = async (userId) => {
+        try {
+            const response = await axios.post('/api/users/sendFollow', {
+                targetUserId: userId,
+                currentUserId: currentUser.id
+            });
+    
+            if (response.data.success) {
+                setFollowers((prev) => 
+                    prev.map(user => 
+                        user._id === userId ? { ...user, followStatus: response.data.message == "Follow request sent" ? "requested" : "followed" } : user
+                    )
+                );
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    
 
     
 
@@ -176,8 +197,8 @@ const ConnectionsPage = () => {
           {tab === "followers" ? (
            <ul className="divide-y" style={{ borderColor: colors.border }}>
            {followers.map((user) => {
-             const isFollowing = following.some(f => f._id === user._id) // ✅ You follow them
-         
+             const isFollowing = following.some(f => f._id === user._id);
+             
              return (
                <li
                  key={user._id}
@@ -201,7 +222,7 @@ const ConnectionsPage = () => {
                    </div>
                  </div>
          
-                 {/* ✅ If you follow them too, show "Message", otherwise show "Follow Back" */}
+                 {/* ✅ Dynamic button state */}
                  {isFollowing ? (
                    <button
                      style={{
@@ -221,14 +242,16 @@ const ConnectionsPage = () => {
                        color: colors.accent,
                      }}
                      className="px-5 py-2 border text-xs uppercase tracking-wider font-medium rounded-sm transition-colors hover:bg-opacity-20"
+                     onClick={() => followBack(user._id)}
                    >
-                     Follow Back
+                     {user.followStatus === "requested" ? "Requested" : user.followStatus === "followed" ? "Message" : "Follow Back"}
                    </button>
                  )}
                </li>
              );
            })}
          </ul>
+         
          
          
           ) : (
@@ -279,7 +302,7 @@ const ConnectionsPage = () => {
                 {tab === "followers" ? "No followers yet" : "You are not following anyone"}
               </p>
               {tab === "following" && (
-                <p style={{ color: colors.accent }} className="text-sm mt-2">
+                <p style={{ color: colors.accent }} className="text-sm mt-2 cursor-pointer" onClick={() => navigate('/explore')} >
                   Discover users to follow
                 </p>
               )}

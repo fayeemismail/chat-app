@@ -76,15 +76,15 @@ const Notifications = () => {
     try {
       if (following[userId] === 'Requested') return;
 
-      
-      await axios.post('/api/users/sendFollow', {
-        targetUserId: id,
-        currentUserId: userId,
-      });
       setFollowing((prev) => ({
         ...prev,
         [userId]: isPrivate ? 'Requested' : 'Following',
       }));
+
+      await axios.post('/api/users/sendFollow', {
+        targetUserId: id,
+        currentUserId: userId,
+      });
     } catch (error) {
       console.log('Error marking notification as read:', error);
     }
@@ -98,7 +98,6 @@ const Notifications = () => {
         targetId: targetId,
         notificationId: notificationId,
       });
-
       setNotifications((prev) => prev.filter((notif) => notif._id !== notificationId));
 
         // ✅ Update following state instantly

@@ -35,10 +35,12 @@ export const checkToken = createAsyncThunk(
   'auth/checkToken',
   async (_, { rejectWithValue }) => {
     const token = localStorage.getItem('token');
-    if (!token) {
-      return rejectWithValue('No token found');
-    }
     try {
+      if (!token) {
+        const response = await axios.post('/api/auth/refresh-token', {}, { withCredentials: true });
+        token = response.data.accessToken;
+        localStorage.setItem('token', token)
+      }
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       return decoded.userId;
     } catch (error) {
