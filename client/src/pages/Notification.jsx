@@ -92,7 +92,6 @@ const Notifications = () => {
 
   const acceptRequest = async (targetId, notificationId) => {
     try {
-      console.log(targetId, notificationId);
       await axios.post('/api/users/accept_request', {
         userId: userId,
         targetId: targetId,

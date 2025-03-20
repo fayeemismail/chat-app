@@ -86,7 +86,6 @@ export const signup = async (req, res, next) => {
         let newUser = new User({ name: name, email: email, password: hashedPassword })
         let saved = newUser.save()
         if (saved) {
-            console.log('user saved successfully')
             res.status(201).json({ message: 'User Created successfully!' })
         } else {
             res.status(500).json({ error: 'Failed to save User!' })
@@ -181,8 +180,7 @@ export const logoutUser = async (req, res, next) => {
 
 export const findUsers = async (req, res, next) => {
     try {
-        const { userId } = req.query
-        console.log(userId)
+        const { userId } = req.query;
         const users = await User.find({ _id: { $ne: userId } })
         res.status(200).json(users)
     } catch (error) {
@@ -259,12 +257,12 @@ export const sendFriendRequest = async (req, res, next) => {
             return res.status(404).json({ error: 'User not Found!' });
         }
 
-        // ✅ Remove existing follow notification if the user unfollowed before
+        // Remove existing follow notification if the user unfollowed before
         targetUser.notifications = targetUser.notifications.filter(
             (notification) => !(notification.sender.toString() === currentUserId && notification.type === "new_follower")
         );
 
-        // ✅ If the target user is private, send a follow request instead
+        // If the target user is private, send a follow request instead
         if (targetUser.isPrivate) {
             const alreadyRequested = targetUser.notifications.some(
                 (notification) => notification.sender.toString() === currentUserId
@@ -286,7 +284,7 @@ export const sendFriendRequest = async (req, res, next) => {
             return res.json({ success: false, message: "Request already sent" });
         }
 
-        // ✅ If not private, directly add to following/followers
+        // If not private, directly add to following/followers
         if (!user.following.includes(targetUserId)) {
             user.following.push(targetUserId);
             await user.save();
@@ -295,7 +293,7 @@ export const sendFriendRequest = async (req, res, next) => {
         if (!targetUser.followers.includes(currentUserId)) {
             targetUser.followers.push(currentUserId);
 
-            // ✅ Add a new notification since the user is now following
+            // Add a new notification since the user is now following
             targetUser.notifications.push({
                 sender: currentUserId,
                 type: "new_follower",
@@ -331,8 +329,7 @@ export const profilePage = async (req, res, next) => {
 
 export const createRoom = async (req, res, next) => {
     try {
-        const {userId, name} = req.body
-        console.log(userId, name);
+        const {userId, name} = req.body;
         const existingRoom = await ChatRoom.findOne({name: name})
         if(!existingRoom){
             const newRoom = new ChatRoom({
@@ -419,7 +416,6 @@ export const acceptFriendRequest = async (req, res, next) => {
         // Save changes
         let save = await currentUser.save();
         if(save){
-            console.log('saved')
             return res.status(200).json({ message: "Friend request accepted" });
         }
     } catch (error) {
@@ -436,7 +432,6 @@ export const acceptFriendRequest = async (req, res, next) => {
 export const editProfile = async (req, res) => {
     try {
         const { userId, name, bio, isPrivate, password, profilePhoto , confirmPassword } = req.body;
-        console.log(password, confirmPassword)
 
         // Find user in the database
         const user = await User.findById(userId);
@@ -453,7 +448,6 @@ export const editProfile = async (req, res) => {
                 return res.status(400).json({ error: "Passwords do not match." });
             }
             user.password = await bcryptjs.hash(password, 10);
-            console.log(user.password)
         }
 
         // Update user fields
