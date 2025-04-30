@@ -26,7 +26,8 @@ const ChatRoomSchema = new Schema({
         type: Date,
         default: Date.now
     }
-});
+}); 
+
 
 
 const ChatRoom = mongoose.model('ChatRoom', ChatRoomSchema);
